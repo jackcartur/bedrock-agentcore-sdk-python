@@ -119,11 +119,13 @@ class TestIdentityClient:
             agent_identity_token = "test-agent-token"
             auth_url = "https://example.com/auth"
             expected_token = "test-access-token"
+            session_uri = "https://example-federation-authorization-request/12345"
 
             # First call returns auth URL, subsequent calls return token
             mock_client.get_resource_oauth2_token.side_effect = [
                 {"authorizationUrl": auth_url},
                 {"accessToken": expected_token},
+                {"sessionUri": session_uri},
             ]
 
             # Mock the token poller
@@ -241,6 +243,7 @@ class TestIdentityClient:
             agent_identity_token = "test-agent-token"
             callback_url = "https://example.com/callback"
             force_authentication = True
+            custom_state = "myAppCustomState"
             expected_token = "test-access-token"
 
             mock_client.get_resource_oauth2_token.return_value = {"accessToken": expected_token}
@@ -252,6 +255,7 @@ class TestIdentityClient:
                 auth_flow="USER_FEDERATION",
                 callback_url=callback_url,
                 force_authentication=force_authentication,
+                custom_state=custom_state,
             )
 
             assert result == expected_token
@@ -262,6 +266,7 @@ class TestIdentityClient:
                 workloadIdentityToken=agent_identity_token,
                 resourceOauth2ReturnUrl=callback_url,
                 forceAuthentication=force_authentication,
+                customState=custom_state,
             )
 
     @pytest.mark.asyncio
@@ -280,8 +285,13 @@ class TestIdentityClient:
             agent_identity_token = "test-agent-token"
             auth_url = "https://example.com/auth"
             expected_token = "test-access-token"
+            force_authentication = True
+            session_uri = "https://example-federation-authorization-request/12345"
 
-            mock_client.get_resource_oauth2_token.return_value = {"authorizationUrl": auth_url}
+            mock_client.get_resource_oauth2_token.return_value = {
+                "authorizationUrl": auth_url,
+                "sessionUri": session_uri,
+            }
 
             # Mock custom token poller
             custom_poller = Mock()
@@ -292,6 +302,7 @@ class TestIdentityClient:
                 agent_identity_token=agent_identity_token,
                 auth_flow="USER_FEDERATION",
                 token_poller=custom_poller,
+                force_authentication=force_authentication,
             )
 
             assert result == expected_token
